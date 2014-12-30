@@ -10,41 +10,92 @@
 
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+  var fs = require('fs')
+  var pem = require('pem')
+  var Client = require('ftp')
 
   grunt.registerMultiTask('ftps_deploy', 'Deploy files to ftps server', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
-      punctuation: '.',
-      separator: ', '
+      auth:{
+        host:'61.135.251.132',
+        port: 16321,
+        authKey: 'key1',
+        secure: true
+      }
     });
+    options.cwd = this.data.files[0].cwd
+    options.src = this.data.files[0].src
+    options.dest = this.data.files[0].dest
+    var done = this.async()
+    if(!grunt.file.exists('.ftppass')){
+      grunt.warn('no valid \'.ftppass\' file found!')
+    }
+    options.auth.user = JSON.parse(grunt.file.read('.ftppass'))[options.auth.authKey]
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
+    var dirs = [],
+        files =[];
+    grunt.file.expand({cwd: options.cwd},options.src).forEach(function(file){
+      if(grunt.file.isFile(options.cwd + '/' + file)){
+        files.push(file)
+      }else{
+        dirs.push(file)
+      }
+    })
+    if(files.length == 0){
+      console.log('No file uploaded!')
+      done()
+    }
+    var c = new Client()
+    c.on('ready',function(){
+      dirs.forEach(function(dir){
+        preload(dir, function(){
+          files.forEach(function(file){
+            upload(options.cwd + '/' + file, options.dest + '/' + file)
+          })
+        })
+      })
+    })
+
+    pem.createCertificate({}, function(err, keys){
+      c.connect({
+        host: options.auth.host,
+        port: options.auth.port,
+        user: options.auth.user.username,
+        password: options.auth.user.password,
+        secure: true,
+        secureOptions:{
+          key: keys.clientKey,
+          cert: keys.certificate,
+          requestCert: true,
+          rejectUnauthorized: false
         }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
+      })
+    })
 
-      // Handle options.
-      src += options.punctuation;
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
+    var i = 0,
+        j = 0;
+    function preload(dir, callback){
+      c.mkdir(options.dest + '/' + dir, function(){
+        j++;
+        if(j == dirs.length){
+          callback()
+        }
+      })
+    }
 
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
+    function upload(origin, remote){
+      c.put(origin, remote, function(err){
+        i++
+        if(i == files.length){
+          c.end()
+          console.log("upload Done!")
+          done()
+        }
+      })
+    }
+
+
   });
 
 };

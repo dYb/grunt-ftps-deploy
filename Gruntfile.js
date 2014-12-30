@@ -30,21 +30,21 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     ftps_deploy: {
-      default_options: {
+      deploy: {
         options: {
+          auth:{
+            host:'61.135.251.132',
+            port: 16321,
+            authKey: 'key1',
+            secure: true
+          }
         },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
+        files: [{
+          expand: true,
+          cwd:'test',
+          src: ['**/*','!**/*.html'],
+          dest: '/utf8/3g/dyb'
+        }]
       }
     },
 
@@ -65,9 +65,9 @@ module.exports = function(grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'ftps_deploy', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'ftps_deploy']);
 
   // By default, lint and run all tests.
-  grunt.registerTask('default', ['jshint', 'test']);
+  grunt.registerTask('default', ['test']);
 
 };

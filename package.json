@@ -1,7 +1,7 @@
 {
   "name": "grunt-ftps-deploy",
   "description": "Deploy files to ftps server",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "homepage": "",
   "author": {
     "name": "ybduan",
@@ -32,10 +32,11 @@
     "grunt-contrib-nodeunit": "^0.3.3",
     "grunt": "~0.4.5"
   },
-  "peerDependencies": {
-    "grunt": "~0.4.5"
-  },
   "keywords": [
     "gruntplugin"
-  ]
+  ],
+  "dependencies": {
+    "ftp": "^0.3.8",
+    "pem": "^1.4.4"
+  }
 }
