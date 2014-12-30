@@ -28,8 +28,8 @@ grunt.initConfig({
     deploy: {
       options: {
         auth:{
-          host:'61.135.251.132',
-          port: 16321,
+          host:'0.0.0.0',
+          port: 3000,
           authKey: 'key1',
           secure: true
         }
