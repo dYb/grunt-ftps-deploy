@@ -62,4 +62,15 @@ grunt.initConfig({
 * If you are using ftp over SSL,  `secure` must be true
 * Make sure path in `files.dest` are already exsit
 
+### Q&A
+When you are pushing files to sftp, and meet with the following problem on windows
+
+```
+unable to load config info from /usr/local/ssl/openssl.cnf
+```
+
+plz download [openssl](http://slproweb.com/products/Win32OpenSSL.html) first, and set this environment variable 
+`OPENSSL_CONF=C:\OpenSSL-Win32\bin\openssl.cfg`  for X86
+`OPENSSL_CONF=C:\OpenSSL-Win64\bin\openssl.cfg`  for X64
+
 
