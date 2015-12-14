@@ -35,10 +35,16 @@ module.exports = function(grunt) {
     var dirs = [],
         files =[];
     grunt.file.expand({cwd: options.cwd},options.src).forEach(function(file){
-      if(grunt.file.isFile(options.cwd + '/' + file)){
-        files.push(file)
-      }else{
-        dirs.push(file)
+      if (grunt.file.isFile(options.cwd + '/' + file)) {
+          if (options.silent === false) {
+              console.log("pushing file: ", file);
+          }
+          files.push(file)
+      } else {
+          if (options.silent === false) {
+              console.log("pushing folder: ", file);
+          }
+          dirs.push(file)
       }
     })
     if(files.length == 0){
