@@ -20,7 +20,8 @@ module.exports = function(grunt) {
         port: 3000,
         authKey: 'key1',
         secure: false
-      }
+      },
+      silent: false
     });
     options.cwd = this.data.files[0].cwd
     options.src = this.data.files[0].src
@@ -36,12 +37,12 @@ module.exports = function(grunt) {
     grunt.file.expand({cwd: options.cwd},options.src).forEach(function(file){
       if (grunt.file.isFile(options.cwd + '/' + file)) {
           if (options.silent === false) {
-              console.log("pushing file: ", file);
+            console.log("pushing file: ", file);
           }
           files.push(file)
       } else {
           if (options.silent === false) {
-              console.log("pushing folder: ", file);
+            console.log("pushing folder: ", file);
           }
           dirs.push(file)
       }
