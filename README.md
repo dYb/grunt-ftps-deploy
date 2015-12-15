@@ -22,6 +22,8 @@ grunt.loadNpmTasks('grunt-ftps-deploy');
 ### Overview
 In your project's Gruntfile, add a section named `ftps_deploy` to the data object passed into `grunt.initConfig()`.
 
+to avoid having the progress of the upload written to console, change or remove the options.silent parameter.
+
 ```js
 grunt.initConfig({
   ftps_deploy: {
@@ -32,7 +34,8 @@ grunt.initConfig({
           port: 3000,
           authKey: 'key1',
           secure: true
-        }
+        },
+        silent:false
       },
       files: [{
         expand: true,
