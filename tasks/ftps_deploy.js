@@ -11,7 +11,6 @@
 module.exports = function(grunt) {
 
   var fs = require('fs')
-  var pem = require('pem')
   var Client = require('ftp')
 
   grunt.registerMultiTask('ftps_deploy', 'Deploy files to ftps server', function() {
@@ -20,7 +19,7 @@ module.exports = function(grunt) {
         host:'0.0.0.0',
         port: 3000,
         authKey: 'key1',
-        secure: true
+        secure: false
       }
     });
     options.cwd = this.data.files[0].cwd
@@ -54,22 +53,23 @@ module.exports = function(grunt) {
           })
         })
       })
+      if(dirs.length == 0){
+        files.forEach(function(file){
+          upload(options.cwd + '/' + file, options.dest + '/' + file)
+        })
+      }
     })
 
-    pem.createCertificate({}, function(err, keys){
-      c.connect({
-        host: options.auth.host,
-        port: options.auth.port,
-        user: options.auth.user.username,
-        password: options.auth.user.password,
-        secure: true,
-        secureOptions:{
-          key: keys.clientKey,
-          cert: keys.certificate,
-          requestCert: true,
-          rejectUnauthorized: false
-        }
-      })
+    c.connect({
+      host: options.auth.host,
+      port: options.auth.port,
+      user: options.auth.user.username,
+      password: options.auth.user.password,
+      secure: options.auth.secure,
+      secureOptions: {
+        requestCert: true,  
+        rejectUnauthorized: false   
+      }
     })
 
 
