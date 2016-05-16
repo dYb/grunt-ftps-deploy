@@ -1,7 +1,7 @@
 {
   "name": "grunt-ftps-deploy",
   "description": "Deploy files to sftp server",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "homepage": "",
   "author": {
     "name": "ybduan",

@@ -77,22 +77,35 @@ module.exports = function(grunt) {
         requestCert: true,  
         rejectUnauthorized: false   
       }
+
     })
 
 
     var i = 0,
         j = 0;
     function preload(dir, callback){
-      c.mkdir(options.dest + '/' + dir, function(){
-        j++;
-        if(j == dirs.length){
-          callback()
+      c.list(options.dest + '/' + dir, function(err, list){
+        if (typeof list === 'undefined'){
+          c.mkdir(options.dest + '/' + dir, true, function(err){
+            if(err) {
+              grunt.log.error('create dir  ' + dir + ' error!', err)
+            }
+            j++;
+            if(j == dirs.length){
+              callback()
+            }
+          })
+        } else {
+          j++
         }
       })
     }
 
     function upload(origin, remote){
       c.put(origin, remote, function(err){
+        if(err) {
+          grunt.log.error('upload ' + origin + ' error!', err)
+        }
         i++
         if(i == files.length){
           c.end()
