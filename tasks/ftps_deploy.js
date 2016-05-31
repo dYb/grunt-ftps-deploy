@@ -37,22 +37,24 @@ module.exports = function(grunt) {
     grunt.file.expand({cwd: options.cwd},options.src).forEach(function(file){
       if (grunt.file.isFile(options.cwd + '/' + file)) {
           if (options.silent === false) {
-            console.log("pushing file: ", file);
+            grunt.verbose.write("pushing file: ", file);
           }
           files.push(file)
       } else {
           if (options.silent === false) {
-            console.log("pushing folder: ", file);
+            grunt.verbose.write("pushing folder: ", file);
           }
           dirs.push(file)
       }
     })
     if(files.length == 0){
-      console.log('No file uploaded!')
+      grunt.verbose.write('No file uploaded!')
       done()
     }
+    grunt.verbose.write("Creating Client");
     var c = new Client()
     c.on('ready',function(){
+    grunt.verbose.write("Client ready", files.length,dirs.length);
       dirs.forEach(function(dir){
         preload(dir, function(){
           files.forEach(function(file){
@@ -80,42 +82,50 @@ module.exports = function(grunt) {
 
     })
 
-
     var i = 0,
         j = 0;
     function preload(dir, callback){
+        grunt.verbose.write("preload: ", dir);
       c.list(options.dest + '/' + dir, function(err, list){
         if (typeof list === 'undefined'){
           c.mkdir(options.dest + '/' + dir, true, function(err){
             if(err) {
-              grunt.log.error('create dir  ' + dir + ' error!', err)
+              throw({
+                error: 'Create directory error!',
+                dir: dir
+              })
             }
-            j++;
-            if(j == dirs.length){
-              callback()
-            }
+            grunt.log.ok('created directory: ',dir);
           })
         } else {
-          j++
+          grunt.verbose.write('directory: ',dir, ' exists');
+        }
+        j++;
+        if(j == dirs.length){
+          callback();
         }
       })
     }
 
     function upload(origin, remote){
+      grunt.verbose.write("starting file: ", origin);
       c.put(origin, remote, function(err){
         if(err) {
-          grunt.log.error('upload ' + origin + ' error!', err)
+          throw({
+            error: 'uploading file error',
+            file: origin,
+            e: err
+          })
         }
-        i++
+        i++;
+          grunt.verbose.write("uploaded: ", origin);
         if(i == files.length){
           c.end()
-          console.log("upload Done!")
+          grunt.log.ok("upload Done!")
           done()
         }
       })
     }
-
-
   });
 
 };
