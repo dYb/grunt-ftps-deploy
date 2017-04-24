@@ -10,7 +10,6 @@
 
 module.exports = function(grunt) {
 
-  var fs = require('fs')
   var Client = require('ftp')
 
   grunt.registerMultiTask('ftps_deploy', 'Deploy files to ftps server', function() {
