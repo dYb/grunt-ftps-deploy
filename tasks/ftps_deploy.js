@@ -1,6 +1,6 @@
 /*
  * grunt-ftps-deploy
- * 
+ *
  *
  * Copyright (c) 2014 ybduan
  * Licensed under the MIT license.
@@ -23,49 +23,61 @@ module.exports = function(grunt) {
       },
       silent: false
     });
+
     options.cwd = this.data.files[0].cwd
     options.src = this.data.files[0].src
     options.dest = this.data.files[0].dest
+
     var done = this.async()
+    var log = function(message) {
+      if (options.silent === false) {
+        grunt.verbose.write(message);
+      }
+    }
+
     if(!grunt.file.exists('.ftppass')){
       grunt.warn('no valid \'.ftppass\' file found!')
     }
-    options.auth.user = JSON.parse(grunt.file.read('.ftppass'))[options.auth.authKey]
+    else {
+      options.auth.user = JSON.parse(grunt.file.read('.ftppass'))[options.auth.authKey]
+    }
 
     var dirs = [],
         files =[];
-    grunt.file.expand({cwd: options.cwd},options.src).forEach(function(file){
+
+    grunt.file.expand({cwd: options.cwd}, options.src).forEach(function(file){
       if (grunt.file.isFile(options.cwd + '/' + file)) {
-          if (options.silent === false) {
-            grunt.verbose.write("pushing file: ", file);
-          }
+          log("pushing file: ", file)
           files.push(file)
       } else {
-          if (options.silent === false) {
-            grunt.verbose.write("pushing folder: ", file);
-          }
-          dirs.push(file)
+        log("pushing folder: ", file)
+        dirs.push(file)
       }
     })
+
     if(files.length == 0){
-      grunt.verbose.write('No file uploaded!')
+      log('No file uploaded!')
       done()
     }
-    grunt.verbose.write("Creating Client");
+
+    log("Creating Client");
     var c = new Client()
+
     c.on('ready',function(){
-    grunt.verbose.write("Client ready", files.length,dirs.length);
+      log("Client ready", files.length, dirs.length);
+
+      var uploadFile = function(file){
+        upload(options.cwd + '/' + file, options.dest + '/' + file)
+      }
+
       dirs.forEach(function(dir){
         preload(dir, function(){
-          files.forEach(function(file){
-            upload(options.cwd + '/' + file, options.dest + '/' + file)
-          })
+          files.forEach(uploadFile)
         })
       })
+
       if(dirs.length == 0){
-        files.forEach(function(file){
-          upload(options.cwd + '/' + file, options.dest + '/' + file)
-        })
+        files.forEach(uploadFile)
       }
     })
 
@@ -76,8 +88,8 @@ module.exports = function(grunt) {
       password: options.auth.user.password,
       secure: options.auth.secure,
       secureOptions: {
-        requestCert: true,  
-        rejectUnauthorized: false   
+        requestCert: true,
+        rejectUnauthorized: false
       }
 
     })
@@ -85,7 +97,7 @@ module.exports = function(grunt) {
     var i = 0,
         j = 0;
     function preload(dir, callback){
-        grunt.verbose.write("preload: ", dir);
+      log("preload: ", dir);
       c.list(options.dest + '/' + dir, function(err, list){
         if (typeof list === 'undefined'){
           c.mkdir(options.dest + '/' + dir, true, function(err){
@@ -96,9 +108,12 @@ module.exports = function(grunt) {
               })
             }
             grunt.log.ok('created directory: ',dir);
+            if(j == dirs.length){
+              callback();
+            }
           })
         } else {
-          grunt.verbose.write('directory: ',dir, ' exists');
+          log('directory: ', dir, ' exists');
         }
         j++;
         if(j == dirs.length){
@@ -108,7 +123,7 @@ module.exports = function(grunt) {
     }
 
     function upload(origin, remote){
-      grunt.verbose.write("starting file: ", origin);
+      log("starting file: ", origin);
       c.put(origin, remote, function(err){
         if(err) {
           throw({
@@ -118,7 +133,7 @@ module.exports = function(grunt) {
           })
         }
         i++;
-          grunt.verbose.write("uploaded: ", origin);
+        log("uploaded: ", origin);
         if(i == files.length){
           c.end()
           grunt.log.ok("upload Done!")
