@@ -28,9 +28,9 @@ module.exports = function(grunt) {
     options.dest = this.data.files[0].dest
 
     var done = this.async()
-    var log = function(message) {
+    var log = function() {
       if (options.silent === false) {
-        grunt.verbose.write(message);
+        grunt.verbose.write(arguments.join(''));
       }
     }
 
