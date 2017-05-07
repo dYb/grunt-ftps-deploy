@@ -30,7 +30,7 @@ module.exports = function(grunt) {
     var done = this.async()
     var log = function() {
       if (options.silent === false) {
-        grunt.verbose.write(arguments.join(''));
+        grunt.verbose.writeln([].slice.call(arguments).join(''));
       }
     }
 
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
     var c = new Client()
 
     c.on('ready',function(){
-      log("Client ready", files.length, dirs.length);
+      log("Client ready ", files.length, " files ", dirs.length, " directories");
 
       var uploadFile = function(file){
         upload(options.cwd + '/' + file, options.dest + '/' + file)
@@ -97,8 +97,10 @@ module.exports = function(grunt) {
         j = 0;
     function preload(dir, callback){
       log("preload: ", dir);
+
       c.list(options.dest + '/' + dir, function(err, list){
-        if (typeof list === 'undefined'){
+        // Create directories were the parameter list is an empty array.
+        if (list.length === 0){
           c.mkdir(options.dest + '/' + dir, true, function(err){
             if(err) {
               throw({
@@ -107,16 +109,19 @@ module.exports = function(grunt) {
               })
             }
             grunt.log.ok('created directory: ',dir);
+
+            j++;
             if(j == dirs.length){
               callback();
             }
           })
         } else {
           log('directory: ', dir, ' exists');
-        }
-        j++;
-        if(j == dirs.length){
-          callback();
+
+          j++;
+          if(j == dirs.length){
+            callback();
+          }
         }
       })
     }
@@ -131,8 +136,8 @@ module.exports = function(grunt) {
             e: err
           })
         }
-        i++;
         log("uploaded: ", origin);
+        i++;
         if(i == files.length){
           c.end()
           grunt.log.ok("upload Done!")
